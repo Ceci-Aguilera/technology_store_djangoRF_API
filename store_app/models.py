@@ -177,7 +177,7 @@ class CartItem(models.Model):
 
     def get_total_product_price(self):
         if self.final_product is not None:
-            return self.quantity * self.final_product.total_price()
+            return self.quantity * self.final_product.get_total_price()
         return 0
 
     def get_amount_saved(self):
@@ -185,7 +185,7 @@ class CartItem(models.Model):
 
 
     def get_total_discount_product_price(self):
-        if self.product is not None:
+        if self.final_product is not None:
             return self.get_total_product_price() - self.get_amount_saved()
         return 0
 

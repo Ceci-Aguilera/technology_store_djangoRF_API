@@ -86,7 +86,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     def get_total_product_price(self, obj):
         if obj.final_product is not None:
-            return obj.quantity * obj.final_product.total_price()
+            return obj.quantity * obj.final_product.get_total_price()
         return 0
 
     def get_amount_saved(self, obj):
@@ -94,7 +94,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 
 
     def get_total_discount_product_price(self, obj):
-        if obj.product is not None:
+        if obj.final_product is not None:
             return obj.get_total_product_price() - obj.get_amount_saved()
         return 0
 
@@ -116,15 +116,11 @@ class CartSerializer(serializers.ModelSerializer):
 
     user = UserCRUDSerializer(read_only=True)
     items = CartItemSerializer(source='cart_items_set', many=True)
-    all_cart_items = serializers.SerializerMethodField('get_all_cart_items')
     total_cost = serializers.SerializerMethodField('get_total_cost')
-
-    def get_all_cart_items(self,obj):
-        return obj.cart_items_set.all()
 
     def get_total_cost(self, obj):
         total_cost = 0.0
-        items = get_all_cart_items()
+        items = obj.get_all_cart_items()
         for order_item in items:
             total_cost += order_item.get_final_price()
         if obj.coupon:
@@ -133,7 +129,7 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('id', 'user', 'items')
+        fields = ('id', 'user', 'items','total_cost')
 
 # class OrderSerializer(serializers.ModelSerializer):
 #

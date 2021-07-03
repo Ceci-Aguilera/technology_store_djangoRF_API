@@ -94,14 +94,16 @@ def add_to_cart(request, product_variation):
 
 def delete_item_from_cart(request, order_id, item_id):
     try:
-        order = Order.objects.get(id = id)
+    # if True:
+        order = Order.objects.get(id = order_id)
         if request.user.is_anonymous == True or request.user == order.user:
-            item = CartItem(id = item_id)
+            item = CartItem.objects.get(id = item_id)
             item.delete()
             result = 'Success'
         else:
             result = 'Error'
     except:
+    # else:
         result = 'Error'
 
     return result
@@ -157,12 +159,9 @@ class ProductVariationDetailView(GenericAPIView):
 class CartView(RetrieveUpdateDestroyAPIView):
 
     serializer_class = CartSerializer
-    lookup_url_kwarg = 'id'
-    lookup_url_kwarg2 = 'item_id'
 
-    def get(self, request, format=None):
+    def get(self, request, id, format=None):
         try:
-            id = self.kwargs.get(self.lookup_url_kwarg)
             order = Order.objects.get(id = id)
             if request.user.is_anonymous == True or request.user == order.user:
                 order_serializer = self.get_serializer(order)
@@ -174,10 +173,8 @@ class CartView(RetrieveUpdateDestroyAPIView):
 
 
     # Delete CartItem from Cart
-    def put(self, request, format=None):
-        id = self.kwargs.get(self.lookup_url_kwarg)
-        item_id = self.kwargs.get(self.lookup_url_kwarg_2)
-        result = delete_item_from_cart(request, order_id, item_id)
+    def put(self, request, id, item_id, format=None):
+        result = delete_item_from_cart(request, id, item_id)
         status_result = status.HTTP_200_OK if result == 'Success' else status.HTTP_400_BAD_REQUEST
         return Response({"Result":result}, status=status_result)
 
