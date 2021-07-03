@@ -4,6 +4,10 @@ from django.utils import timezone
 from django.contrib import auth
 from customer_app.models import User
 
+from django.core.validators import RegexValidator
+
+COLOR_VALIDATOR = RegexValidator(r'^#(?:[0-9a-fA-F]{3}){1,2}$', 'only valid hex color code is accepted')
+
 # Create your models here.
 
 
@@ -74,6 +78,12 @@ class Variation(models.Model):
         return self.category.category_title + " - " + self.variation
 
 
+class ColorVariation(models.Model):
+    nickname = models.CharField(max_length=256)
+    color_in_hex = models.CharField(max_length=256, validators=[COLOR_VALIDATOR], default='#000000')
+
+    def __str__(self):
+        return self.nickname + " - " + self.color_in_hex
 
 # ==============================================================================
 #   Product Variation
@@ -83,6 +93,7 @@ class ProductVariation(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='uploads/products/')
     variations = models.ManyToManyField(Variation)
+    color_variations = models.ManyToManyField(ColorVariation)
     custom_base_price = models.FloatField(default=0.0)
     custom_price_with_all_variations = models.FloatField(default=0.0)
 
@@ -102,6 +113,51 @@ class ProductVariation(models.Model):
 
 
 
+
+# ==============================================================================
+#   ORDER
+# ==============================================================================
+class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
+    # items = models.ManyToManyField(CartItem)
+    start_date = models.DateTimeField(auto_now_add=True)
+    ordered_date = models.DateTimeField(auto_now_add=True)
+    ordered = models.BooleanField(default=False)
+    shipping_address = models.ForeignKey(
+        'Address', related_name='shipping_address', on_delete=models.SET_NULL, blank=True, null=True)
+    billing_address = models.ForeignKey(
+        'Address', related_name='billing_address', on_delete=models.SET_NULL, blank=True, null=True)
+    payment = models.ForeignKey(
+        'Payment', on_delete=models.SET_NULL, blank=True, null=True)
+    coupon = models.ForeignKey(
+        'Coupon', on_delete=models.SET_NULL, blank=True, null=True)
+    being_delivered = models.BooleanField(default=False)
+    received = models.BooleanField(default=False)
+    refund_requested = models.BooleanField(default=False)
+    refund_granted = models.BooleanField(default=False)
+
+    def __str__(self):
+        if self.user is not None:
+            return self.user.email + '-' + str(self.start_date)
+        return 'Anonymous' + '-' + str(self.start_date)
+
+    def get_all_cart_items(self):
+        return self.cart_items_set.all()
+
+    def get_total_cost(self):
+        total_cost = 0.0
+        items = get_all_cart_items()
+        for order_item in items:
+            total_cost += order_item.get_final_price()
+        if self.coupon:
+            total_cost -= max(0, (self.coupon.amount))
+        return total_cost
+
+
+
+
+
+
 # ==============================================================================
 #   CART ITEM : Item added to cart
 # ==============================================================================
@@ -110,6 +166,8 @@ class CartItem(models.Model):
     quantity = models.IntegerField(default=1)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     ordered = models.BooleanField(default=False)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE,related_name="cart_items_set")
+    final_color = models.ForeignKey(ColorVariation, on_delete=models.CASCADE)
 
     def __str__(self):
         helper = 'Deleted object'
@@ -137,47 +195,6 @@ class CartItem(models.Model):
                 return self.get_total_discount_product_price()
             return self.get_total_product_price()
         return 0
-
-
-
-
-
-
-# ==============================================================================
-#   ORDER
-# ==============================================================================
-class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
-    items = models.ManyToManyField(CartItem)
-    start_date = models.DateTimeField(auto_now_add=True)
-    ordered_date = models.DateTimeField(auto_now_add=True)
-    ordered = models.BooleanField(default=False)
-    shipping_address = models.ForeignKey(
-        'Address', related_name='shipping_address', on_delete=models.SET_NULL, blank=True, null=True)
-    billing_address = models.ForeignKey(
-        'Address', related_name='billing_address', on_delete=models.SET_NULL, blank=True, null=True)
-    payment = models.ForeignKey(
-        'Payment', on_delete=models.SET_NULL, blank=True, null=True)
-    coupon = models.ForeignKey(
-        'Coupon', on_delete=models.SET_NULL, blank=True, null=True)
-    being_delivered = models.BooleanField(default=False)
-    received = models.BooleanField(default=False)
-    refund_requested = models.BooleanField(default=False)
-    refund_granted = models.BooleanField(default=False)
-
-    def __str__(self):
-        if self.user is not None:
-            return self.user.email + '-' + str(self.start_date)
-        return 'Anonymous' + '-' + str(self.start_date)
-
-    def get_total_cost(self):
-        total_cost = 0.0
-        for order_item in self.items.all():
-            total_cost += order_item.get_final_price()
-        if self.coupon:
-            total_cost -= max(0, (self.coupon.amount))
-        return total_cost
-
 
 
 

@@ -43,11 +43,18 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = '__all__'
 
+class ColorVariationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ColorVariation
+        fields = '__all__'
+
 class ProductVariationSerializer(serializers.ModelSerializer):
 
     product = ProductSerializer(read_only = True)
     image = serializers.ImageField(use_url=True, required=False)
     variations = VariationSerializer(read_only=True, many=True)
+    color_variations = ColorVariationSerializer(read_only=True, many=True)
     total_price = serializers.SerializerMethodField('get_total_price')
 
 
@@ -65,3 +72,92 @@ class ProductVariationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductVariation
         fields = '__all__'
+
+
+class CartItemSerializer(serializers.ModelSerializer):
+
+    final_product = ProductVariationSerializer(read_only=True)
+    user = UserCRUDSerializer(read_only=True)
+    final_color = ColorVariationSerializer(read_only=True)
+    total_product_price = serializers.SerializerMethodField('get_total_product_price')
+    amount_saved = serializers.SerializerMethodField('get_amount_saved')
+    total_discount_product_price = serializers.SerializerMethodField('get_total_discount_product_price')
+    final_price = serializers.SerializerMethodField('get_final_price')
+
+    def get_total_product_price(self, obj):
+        if obj.final_product is not None:
+            return obj.quantity * obj.final_product.total_price()
+        return 0
+
+    def get_amount_saved(self, obj):
+        return obj.quantity * obj.final_product.product.discount_price
+
+
+    def get_total_discount_product_price(self, obj):
+        if obj.product is not None:
+            return obj.get_total_product_price() - obj.get_amount_saved()
+        return 0
+
+    def get_final_price(self, obj):
+        if obj.final_product is not None:
+            if obj.final_product.product.discount_price:
+                return obj.get_total_discount_product_price()
+            return obj.get_total_product_price()
+        return 0
+
+    class Meta:
+        model = CartItem
+        fields = '__all__'
+
+
+
+
+class CartSerializer(serializers.ModelSerializer):
+
+    user = UserCRUDSerializer(read_only=True)
+    items = CartItemSerializer(source='cart_items_set', many=True)
+    all_cart_items = serializers.SerializerMethodField('get_all_cart_items')
+    total_cost = serializers.SerializerMethodField('get_total_cost')
+
+    def get_all_cart_items(self,obj):
+        return obj.cart_items_set.all()
+
+    def get_total_cost(self, obj):
+        total_cost = 0.0
+        items = get_all_cart_items()
+        for order_item in items:
+            total_cost += order_item.get_final_price()
+        if obj.coupon:
+            total_cost -= max(0, (obj.coupon.amount))
+        return total_cost
+
+    class Meta:
+        model = Order
+        fields = ('id', 'user', 'items')
+
+# class OrderSerializer(serializers.ModelSerializer):
+#
+#     user = UserCRUDSerializer(read_only=True)
+#     items = CartItemSerializer(source='cart_items_set', many=True)
+#     billing_address = AddressSerializer(read_only=True)
+#     shipping_address = AddressSerializer(read_only=True)
+#     payment = PaymentSerializer(read_only=True)
+#     coupon = CouponSerializer(read_only=True)
+#     all_cart_items = serializers.SerializerMethodField('get_all_cart_items')
+#     total_cost = serializers.SerializerMethodField('get_total_cost')
+#
+    # def get_all_cart_items(self,obj):
+    #     return obj.cart_items_set.all()
+    #
+    # def get_total_cost(self, obj):
+    #     total_cost = 0.0
+    #     items = get_all_cart_items()
+    #     for order_item in items:
+    #         total_cost += order_item.get_final_price()
+    #     if obj.coupon:
+    #         total_cost -= max(0, (obj.coupon.amount))
+    #     return total_cost
+#
+#     class Meta:
+#         model = Order
+#         fields = '__all__'

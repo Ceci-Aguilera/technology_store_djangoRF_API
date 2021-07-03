@@ -88,5 +88,6 @@ admin.site.register(ProductVariation)
 admin.site.register(Variation)
 admin.site.register(VariationCategory)
 admin.site.register(Category)
+admin.site.register(ColorVariation)
 
 admin.site.site_header = 'Tech Store Admin'
