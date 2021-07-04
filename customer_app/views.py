@@ -239,6 +239,22 @@ class UserManageAddressView(RetrieveUpdateDestroyAPIView):
 
 
 
+class UserAddressListView(GenericAPIView):
+
+    serializer_class = AddressSerializer
+
+    def get(self, request, format=None):
+
+        billing_addresses = Address.objects.all().filter(user = request.user, address_type="B")
+        shipping_addresses = Address.objects.all().filter(user = request.user, address_type="S")
+
+        billing_addresses_serializer = self.get_serializer(billing_addresses, many=True)
+        billing_addresses = billing_addresses_serializer.data
+
+        shipping_addresses_serializer = self.get_serializer(shipping_addresses, many=True)
+        shipping_addresses = shipping_addresses_serializer.data
+        return Response({"Billing_addresses": billing_addresses, "Shipping_addresses":shipping_addresses}, status=status.HTTP_200_OK)
+
 
 
 
@@ -258,9 +274,8 @@ class CreateAddress(GenericAPIView):
         address_serializer.save(user = user)
         return Response({"Address": address_serializer.data}, status=status.HTTP_200_OK)
 
-    def put(self, request, format='None'):
+    def put(self, request,id, format='None'):
         data = request.data
-        id = data['id']
         address_type = data['address_type']
         user = request.user
 

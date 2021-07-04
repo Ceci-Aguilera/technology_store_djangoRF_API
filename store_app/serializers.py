@@ -33,6 +33,7 @@ class VariationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
 class ProductSerializer(serializers.ModelSerializer):
 
     category = CategorySerializer(read_only = True)
@@ -131,29 +132,57 @@ class CartSerializer(serializers.ModelSerializer):
         model = Order
         fields = ('id', 'user', 'items','total_cost')
 
-# class OrderSerializer(serializers.ModelSerializer):
-#
-#     user = UserCRUDSerializer(read_only=True)
-#     items = CartItemSerializer(source='cart_items_set', many=True)
-#     billing_address = AddressSerializer(read_only=True)
-#     shipping_address = AddressSerializer(read_only=True)
-#     payment = PaymentSerializer(read_only=True)
-#     coupon = CouponSerializer(read_only=True)
-#     all_cart_items = serializers.SerializerMethodField('get_all_cart_items')
-#     total_cost = serializers.SerializerMethodField('get_total_cost')
-#
-    # def get_all_cart_items(self,obj):
-    #     return obj.cart_items_set.all()
-    #
-    # def get_total_cost(self, obj):
-    #     total_cost = 0.0
-    #     items = get_all_cart_items()
-    #     for order_item in items:
-    #         total_cost += order_item.get_final_price()
-    #     if obj.coupon:
-    #         total_cost -= max(0, (obj.coupon.amount))
-    #     return total_cost
-#
-#     class Meta:
-#         model = Order
-#         fields = '__all__'
+
+class PaymentSerializer(serializers.ModelSerializer):
+
+    user  = UserCRUDSerializer(read_only=True)
+
+    class Meta:
+        model = Payment
+        fields = '__all__'
+
+
+class CouponSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Coupon
+        fields = '__all__'
+
+class OrderSerializer(serializers.ModelSerializer):
+
+    user = UserCRUDSerializer(read_only=True)
+    items = CartItemSerializer(source='cart_items_set', many=True)
+    billing_address = AddressSerializer(read_only=True)
+    shipping_address = AddressSerializer(read_only=True)
+    payment = PaymentSerializer(read_only=True)
+    coupon = CouponSerializer(read_only=True)
+    all_cart_items = serializers.SerializerMethodField('get_all_cart_items')
+    total_cost = serializers.SerializerMethodField('get_total_cost')
+
+    def get_all_cart_items(self,obj):
+        return obj.cart_items_set.all()
+
+    def get_total_cost(self, obj):
+        total_cost = 0.0
+        items = get_all_cart_items()
+        for order_item in items:
+            total_cost += order_item.get_final_price()
+        if obj.coupon:
+            total_cost -= max(0, (obj.coupon.amount))
+        return total_cost
+
+    class Meta:
+        model = Order
+        fields = '__all__'
+
+
+
+class RefundSerializer(serializers.ModelSerializer):
+
+    order = OrderSerializer(read_only=True)
+    reason = serializers.CharField(max_length=255)
+    email = serializers.CharField(max_length=255)
+
+    class Meta:
+        model = Refund
+        fields = '__all__'
