@@ -8,13 +8,7 @@ class AddressSerializer(serializers.ModelSerializer):
         model = Address
         exclude = ['user']
 
-class CategorySerializer(serializers.ModelSerializer):
 
-    image = serializers.ImageField(use_url = True, required=False)
-
-    class Meta:
-        model = Category
-        fields = '__all__'
 
 
 class VariationCategorySerializer(serializers.ModelSerializer):
@@ -26,19 +20,29 @@ class VariationCategorySerializer(serializers.ModelSerializer):
 
 class VariationSerializer(serializers.ModelSerializer):
 
-    category = VariationCategorySerializer(read_only = True)
+    variation_category = VariationCategorySerializer(read_only = True)
 
     class Meta:
         model = Variation
         fields = '__all__'
 
 
+class CategorySerializer(serializers.ModelSerializer):
+
+    image = serializers.ImageField(use_url = True, required=False)
+    variations_categories = VariationCategorySerializer(read_only=True, many=True)
+    possible_variations = VariationSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Category
+        fields = '__all__'
+
 
 class ProductSerializer(serializers.ModelSerializer):
 
     category = CategorySerializer(read_only = True)
     description = serializers.CharField(required=False)
-    available_variations = VariationCategorySerializer(read_only=True, many=True)
+    extra_available_variations = VariationCategorySerializer(read_only=True, many=True)
 
     class Meta:
         model = Product

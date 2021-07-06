@@ -10,6 +10,7 @@ urlpatterns = [
     url(r'^products/$', ProductVariationsListView.as_view(), name='products-variation-api'),
     url(r'^products-category/(?P<id>[0-9]+)/$', ProductVariationFromCategoryListView.as_view(), name='products-category-api'),
     url(r'^product-filter/$', ProductFilterByCK.as_view(), name='product-filter-api'),
+    url(r'^variation-filter/(?P<id>[0-9]+)/$', VariationsInCategoryListView.as_view(), name='variation-filter-api'),
     url(r'^order-detail/(?P<id>[0-9]+)/$', OrderDetailView.as_view(), name='order-detail-api'),
     url(r'^user-orders/$', UserOrdersListView.as_view(), name='user-orders-api'),
     url(r'^product-detail/(?P<id>[0-9]+)/$', ProductVariationDetailView.as_view(), name='product-detail-api'),

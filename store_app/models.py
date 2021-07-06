@@ -20,20 +20,6 @@ ADDRESS_CHOICES = (
 
 
 # ==============================================================================
-#   CATEGORY : Category of a Product
-# ==============================================================================
-class Category(models.Model):
-    category_title = models.CharField(max_length=256)
-    image = models.ImageField(upload_to='uploads/products/', blank=True)
-
-    class Meta:
-        verbose_name_plural='categories'
-
-    def __str__(self):
-        return self.category_title
-
-
-# ==============================================================================
 #   Variation CATEGORY
 # ==============================================================================
 class VariationCategory(models.Model):
@@ -41,6 +27,39 @@ class VariationCategory(models.Model):
 
     class Meta:
         verbose_name_plural='variation categories'
+
+    def __str__(self):
+        return self.category_title
+
+
+
+
+# ==============================================================================
+#   Variation
+# ==============================================================================
+class Variation(models.Model):
+    variation_category= models.ForeignKey(VariationCategory, on_delete=models.CASCADE)
+    variation = models.CharField(max_length=256)
+    price = models.FloatField(default=0.0)
+
+    def __str__(self):
+        return self.variation_category.category_title + " - " + self.variation
+
+
+
+
+
+# ==============================================================================
+#   CATEGORY : Category of a Product
+# ==============================================================================
+class Category(models.Model):
+    category_title = models.CharField(max_length=256)
+    image = models.ImageField(upload_to='uploads/products/', blank=True)
+    variations_categories = models.ManyToManyField(VariationCategory)
+    possible_variations = models.ManyToManyField(Variation)
+
+    class Meta:
+        verbose_name_plural='categories'
 
     def __str__(self):
         return self.category_title
@@ -58,24 +77,12 @@ class Product(models.Model):
     discount_price = models.FloatField(default=0.0)
     description = models.TextField()
     amount_sold = models.IntegerField(default=0)
-    available_variations = models.ManyToManyField(VariationCategory)
+    extra_available_variations = models.ManyToManyField(VariationCategory)
 
     def __str__(self):
         return self.title + " - " + self.category.category_title
 
 
-
-
-# ==============================================================================
-#   Variation
-# ==============================================================================
-class Variation(models.Model):
-    category= models.ForeignKey(VariationCategory, on_delete=models.CASCADE)
-    variation = models.CharField(max_length=256)
-    price = models.FloatField(default=0.0)
-
-    def __str__(self):
-        return self.category.category_title + " - " + self.variation
 
 
 class ColorVariation(models.Model):

@@ -145,6 +145,18 @@ class ProductFilterByCK(ListAPIView):
         products = ProductVariation.objects.filter(product__title__icontains=search_params)
 
 
+class VariationsInCategoryListView(APIView):
+
+    def get(self, request, id, format=None):
+        product_category = Category.objects.get(id = id)
+        variations_categories = product_category.variations_categories.all()
+        result = dict()
+        for category in variations_categories:
+            variations = product_category.possible_variations.filter(variation_category=category)
+            result[category.category_title] = VariationSerializer(variations, many=True).data
+
+        return Response({"Result": result}, status=status.HTTP_200_OK)
+
 
 
 
