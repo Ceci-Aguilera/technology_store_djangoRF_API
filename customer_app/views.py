@@ -27,11 +27,7 @@ from django.utils.encoding import force_bytes
 from django.core.mail import EmailMessage
 
 from .models import User
-from .serializers import (
-    UserRegisterSerializer,
-    UserCRUDSerializer,
-    LoginSerializer
-)
+from .serializers import *
 
 from store_app.models import Address, Order
 from store_app.serializers import AddressSerializer
