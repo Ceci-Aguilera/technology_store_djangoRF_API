@@ -82,22 +82,81 @@ class OrderUpdateView(RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
 
 # ==============================================================================
-# Products
+# Category Variation
 # ==============================================================================
-# class ProductListView(ListCreateAPIView):
-#     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
-#     queryset = Product.objects.all()
-#     serializer_class = ProductSerializer
-#
-# class ProuductManageView(RetrieveUpdateDestroyAPIView):
-#     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
-#     serializer_class = ProductSerializer
-#     lookup_field = 'id'
-#
-# class ProductMostSell(ListAPIView):
-#     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
-#     queryset = Product.objects.all().order_by('amount_sold')[:10]
-#     serializer_class = ProductMostSellSerializer
+class VariationCategoyListView(ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    queryset = VariationCategory.objects.all()
+    serializer_class = VariationCategorySerializer
+
+class VariationCategoryUpdateView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = VariationCategorySerializer
+    lookup_field = 'id'
+
+# ==============================================================================
+# Variation
+# ==============================================================================
+class VariationListView(ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    queryset = Variation.objects.all()
+    serializer_class = VariationSerializer
+
+class VariationFromCategoryListView(ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    def get_queryset(self):
+        id = self.kwargs.get("id")
+        return Variation.objects.filter(variation_category__id=id)
+    serializer_class = VariationSerializer
+
+class VariationUpdateView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = VariationSerializer
+    lookup_field = 'id'
+
+# ==============================================================================
+# Color Variation
+# ==============================================================================
+class ColorVariationListView(ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    queryset = Variation.objects.all()
+    serializer_class = ColorVariationSerializer
+
+class ColorVariationUpdateView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = ColorVariationSerializer
+    lookup_field = 'id'
+
+# ==============================================================================
+# Product
+# ==============================================================================
+class ProductListView(ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+class ProductUpdateView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = ProductSerializer
+    lookup_field = 'id'
+
+class ProductMostSell(ListAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    queryset = Product.objects.all().order_by('amount_sold')[:10]
+    serializer_class = ProductSerializer
+
+# ==============================================================================
+# Product Variation
+# ==============================================================================
+class ProductVariationListView(ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    queryset = ProductVariation.objects.all()
+    serializer_class = ProductVariationSerializer
+
+class ProductVariationUpdateView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = ProductVariationSerializer
+    lookup_field = 'id'
 
 # ==============================================================================
 # Refund
@@ -107,7 +166,7 @@ class RefundListView(ListCreateAPIView):
     queryset = Refund.objects.all()
     serializer_class = RefundSerializer
 
-class RefundtManageView(RetrieveUpdateDestroyAPIView):
+class RefundtUpdateView(RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = RefundSerializer
     lookup_field = 'id'
