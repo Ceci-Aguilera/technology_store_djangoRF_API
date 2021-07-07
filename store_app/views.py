@@ -120,10 +120,14 @@ class CategoryListView(ListAPIView):
     queryset = Category.objects.all()
 
 
+
+
 class ProductVariationsListView(ListAPIView):
     serializer_class = ProductVariationSerializer
     model = ProductVariation
     queryset = ProductVariation.objects.all()
+
+
 
 class ProductVariationFromCategoryListView(ListAPIView):
     serializer_class = ProductVariationSerializer
@@ -133,6 +137,8 @@ class ProductVariationFromCategoryListView(ListAPIView):
     def get_queryset(self):
         id = self.kwargs.get(self.lookup_url_kwarg)
         return ProductVariation.objects.filter(product__category__id=id)
+
+
 
 
 # Product Filtering By Category And Keyword
@@ -145,6 +151,9 @@ class ProductFilterByCK(ListAPIView):
         products = ProductVariation.objects.filter(product__title__icontains=search_params)
 
 
+
+# This filter functionality only works with multiple variations, but
+# only one variation per category
 class VariationsInCategoryListView(APIView):
 
     def get(self, request, id, format=None):
@@ -156,6 +165,22 @@ class VariationsInCategoryListView(APIView):
             result[category.category_title] = VariationSerializer(variations, many=True).data
 
         return Response({"Result": result}, status=status.HTTP_200_OK)
+
+    def post(self, request, id, format=None):
+        data = request.data
+        product_category = Category.objects.get(id = id)
+        variations_categories = product_category.variations_categories.all()
+        products = ProductVariation.objects.filter(product__category__id = id)
+
+        for category in variations_categories:
+            try:
+                variation_id = data[category.category_title]
+                products = products.filter(variations__id=variation_id)
+            except:
+                pass
+
+        products_serializer = ProductVariationSerializer(products, many=True)
+        return Response({"Result": products_serializer.data}, status=status.HTTP_200_OK)
 
 
 
@@ -172,12 +197,16 @@ class OrderDetailView(RetrieveAPIView):
         return None
 
 
+
+
 class UserOrdersListView(ListAPIView):
 
     permission_classes = [permissions.IsAuthenticated,]
     serializer_class = OrderSerializer
     def get_queryset(self):
         return Order.objects.fiter(user=self.request.user)
+
+
 
 
 class ProductVariationDetailView(GenericAPIView):
@@ -200,6 +229,8 @@ class ProductVariationDetailView(GenericAPIView):
         result = add_to_cart(request, final_product)
         status_result = status.HTTP_200_OK if result!="Error" else status.HTTP_400_BAD_REQUEST
         return Response({"Result":result}, status=status_result)
+
+
 
 
 class CartView(RetrieveUpdateDestroyAPIView):
@@ -231,6 +262,8 @@ class CartView(RetrieveUpdateDestroyAPIView):
             return Response({"Result":order_serializer.data}, status=status.HTTP_200_OK)
         else:
             return Response ({"Result":"Error"}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 
@@ -285,6 +318,8 @@ class CheckoutView(GenericAPIView):
 
         except:
             return Response({"Order Summary": "Error while updating"}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 
@@ -424,6 +459,8 @@ class PaymentView(GenericAPIView):
 
         except:
             return Response({"Result":"Error during payment"}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 
