@@ -8,6 +8,7 @@ app_name = 'store_app'
 urlpatterns = [
     url(r'^categories/$', CategoryListView.as_view(), name='categories-api'),
     url(r'^products/$', ProductVariationsListView.as_view(), name='products-variation-api'),
+    url(r'^products-most-sell/$', ProductVariationMostSell.as_view(), name='products-variation--most-sell-api'),
     url(r'^products-category/(?P<id>[0-9]+)/$', ProductVariationFromCategoryListView.as_view(), name='products-category-api'),
     url(r'^product-filter/$', ProductFilterByCK.as_view(), name='product-filter-api'),
     url(r'^variation-filter/(?P<id>[0-9]+)/$', VariationsInCategoryListView.as_view(), name='variation-filter-api'),

@@ -103,6 +103,7 @@ class ProductVariation(models.Model):
     color_variations = models.ManyToManyField(ColorVariation)
     custom_base_price = models.FloatField(default=0.0)
     custom_price_with_all_variations = models.FloatField(default=0.0)
+    amount_sold = models.IntegerField(default=0)
 
     def __str__(self):
         return self.product.title  + " - v"

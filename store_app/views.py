@@ -129,6 +129,12 @@ class ProductVariationsListView(ListAPIView):
 
 
 
+class ProductVariationMostSell(ListAPIView):
+    queryset = ProductVariation.objects.all().order_by('amount_sold')[:10]
+    model =ProductVariation
+    serializer_class = ProductVariationSerializer
+
+
 class ProductVariationFromCategoryListView(ListAPIView):
     serializer_class = ProductVariationSerializer
     model = ProductVariation
