@@ -151,10 +151,17 @@ class ProductVariationFromCategoryListView(ListAPIView):
 class ProductFilterByCK(ListAPIView):
     serializer_class = ProductVariationSerializer
     model = ProductVariation
+    lookup_url_kwarg = 'id'
 
     def get_queryset(self):
         search_params = self.request.query_params.get('search_keyword')
-        products = ProductVariation.objects.filter(product__title__icontains=search_params)
+        id = self.kwargs.get(self.lookup_url_kwarg)
+        if id != None:
+            products = ProductVariation.objects.filter(product__title__icontains=search_params, product__category__id=id)
+        else:
+            products = ProductVariation.objects.filter(product__title__icontains=search_params)
+        return products
+
 
 
 
