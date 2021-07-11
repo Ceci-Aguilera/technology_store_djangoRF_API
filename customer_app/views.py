@@ -125,7 +125,7 @@ class SignUpAPIView(GenericAPIView):
                 # current_site = get_current_site(request)
 
                 email_subject="Activate your account."
-                message=render_to_string('ecommerce_accounts_api/activate_account.html', {
+                message=render_to_string('customer_app/activate_account.html', {
                     'user': user.email,
                     # 'domain': current_site.domain,
                     'uid': user.last_uid,
@@ -305,7 +305,7 @@ class ResetPasswordMessage(APIView):
             user.save()
             user.last_token_password=default_token_generator.make_token(user)
             user.save()
-            message=render_to_string('ecommerce_accounts_api/reset_password.html', {
+            message=render_to_string('customer_app/reset_password.html', {
                 'user': user.email,
                 # 'domain': current_site.domain,
                 'uid': user.last_uid_password,
