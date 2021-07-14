@@ -82,7 +82,7 @@ def add_to_cart(request, product_variation):
         cart_item = CartItem(final_product = product_variation,
             final_color=final_color, quantity=data['quantity'],
             order=order)
-            
+
         for eachProduct in order.get_all_cart_items():
             if eachProduct.final_product == cart_item.final_product:
                 quantity = eachProduct.quantity + cart_item.quantity
@@ -99,7 +99,6 @@ def add_to_cart(request, product_variation):
 
 def delete_item_from_cart(request, order_id, item_id):
     try:
-    # if True:
         order = Order.objects.get(id = order_id)
         if request.user.is_anonymous == True or request.user == order.user:
             item = CartItem.objects.get(id = item_id)
@@ -108,7 +107,6 @@ def delete_item_from_cart(request, order_id, item_id):
         else:
             result = 'Error'
     except:
-    # else:
         result = 'Error'
 
     return result
@@ -269,13 +267,20 @@ class CartView(RetrieveUpdateDestroyAPIView):
     def put(self, request, id, item_id, format=None):
         result = delete_item_from_cart(request, id, item_id)
         status_result = status.HTTP_200_OK if result == 'Success' else status.HTTP_400_BAD_REQUEST
+        order = Order.objects.get(id = id)
+        if request.user.is_anonymous == True or request.user == order.user:
+            order_serializer = self.get_serializer(order)
+            result=order_serializer.data
+        else:
+            result = 'Error'
         return Response({"Result":result}, status=status_result)
 
 
     def delete(self, request, id, format=None):
+        order = Order.objects.get(id = id)
         if request.user.is_anonymous == True or request.user == order.user:
             order.delete()
-            return Response({"Result":order_serializer.data}, status=status.HTTP_200_OK)
+            return Response({"Result":"Success"}, status=status.HTTP_200_OK)
         else:
             return Response ({"Result":"Error"}, status=status.HTTP_400_BAD_REQUEST)
 
