@@ -71,15 +71,18 @@ def add_to_cart(request, product_variation):
             try:
                 order = Order.objects.create()
                 order_id = order.id
-                final_color = ColorVariationSerializer(data=data['final_color'])
-                final_color.is_valid(raise_exception=True)
-                final_color = final_color.save()
-                cart_item = CartItem(final_product = product_variation,
-                    final_color=final_color, quantity=data['quantity'],
-                    order=order)
+
             except:
                 result='Error'
                 return result
+
+        final_color = ColorVariationSerializer(data=data['final_color'])
+        final_color.is_valid(raise_exception=True)
+        final_color = final_color.save()
+        cart_item = CartItem(final_product = product_variation,
+            final_color=final_color, quantity=data['quantity'],
+            order=order)
+            
         for eachProduct in order.get_all_cart_items():
             if eachProduct.final_product == cart_item.final_product:
                 quantity = eachProduct.quantity + cart_item.quantity
