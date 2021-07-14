@@ -237,6 +237,7 @@ class UserManageAddressView(RetrieveUpdateDestroyAPIView):
 
 class UserAddressListView(GenericAPIView):
 
+    permission_classes = [permissions.IsAuthenticated,]
     serializer_class = AddressSerializer
 
     def get(self, request, format=None):
