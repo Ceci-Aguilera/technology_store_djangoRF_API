@@ -276,21 +276,28 @@ class CreateAddress(GenericAPIView):
         address_type = data['address_type']
         user = request.user
 
-        try:
-            old_default = Address.objects.get(default=True, address_type=address_type, user=user)
-            old_default.default=False
-            old_default.save()
-        except:
-            pass
+        if(data['new_default']):
+            # try:
+            if True:
+                old_default = Address.objects.get(default=True, address_type=address_type, user=user)
+                old_default.default=False
+                old_default.save()
+            # except:
+            else:
+                pass
 
-        try:
-            new_default = Address.objects.get(id=id, user=user)
-            new_default.default=True
-            new_default.save()
-        except:
-            return Response({"Set Default Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                new_default = Address.objects.get(id=id, user=user)
+                new_default.default=True
+                new_default.save()
+            except:
+                return Response({"Set Default Result": "Error"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            address = Address.objects.get(id=id, user=user)
+            address.default=False
+            address.save()
 
-        return Response({"Set Default Result": "Error"}, status=status.HTTP_200_OK)
+        return Response({"Set Default Result": "Success"}, status=status.HTTP_200_OK)
 
 
 
