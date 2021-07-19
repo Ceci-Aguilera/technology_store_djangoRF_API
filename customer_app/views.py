@@ -308,10 +308,10 @@ class ResetPasswordMessage(APIView):
         # current_site = get_current_site(request)
         email_subject = "Reset your password"
         try:
-            try:
-                user = request.user
-            except:
+            if request.user.is_anonymous == True:
                 user = User.objects.get(email=request.data['email'])
+            else:
+                user = request.user
 
             user.last_uid_password=urlsafe_base64_encode(force_bytes(user.pk))
             user.save()
